@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cocos2d.h>
-#include <geode/utils/file.hpp>
-#include <fstream>
 
 using namespace geode::prelude;
 
