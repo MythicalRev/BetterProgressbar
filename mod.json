@@ -1,0 +1,22 @@
+{
+	"geode": "4.10.0",
+	"gd": {
+		"win": "2.2074"
+	},
+	"id": "mythicalrev.better-progressbar",
+	"name": "Better Progress Bar",
+	"version": "v1.0.0",
+	"developer": "MythicalRev",
+	"description": "Adds Improvements to the Progress Bar",
+	"dependencies": {
+		"geode.node-ids": ">=v1.20.0"
+	},
+	"resources": {
+        "sprites": [
+            "resources/*.png"
+        ]
+    },
+	"tags": [
+		"enhancement"
+	]
+}
