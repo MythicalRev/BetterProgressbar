@@ -53,7 +53,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
         sessionBest->setPositionX(0.0f);
         sessionBest->setPositionY(8.0f);
         sessionBest->setScale(0.15f);
-        sessionBest->setID("bpb-sessionbest");
+        sessionBest->setID("sessionbest"_spr);
         sessionBest->setVisible(false);
 
         progressBar->addChild(sessionBest);
@@ -62,7 +62,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
         bestPercent->setPositionX((progressBar->getContentSize().width * m_fields->m_highestPercent) / 100.0f);
         bestPercent->setPositionY(8.0f);
         bestPercent->setScale(0.17f);
-        bestPercent->setID("bpb-bestpercent");
+        bestPercent->setID("bestpercent"_spr);
 
         progressBar->addChild(bestPercent);
     }
@@ -72,7 +72,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
 
         if (progressBar) {
             if (m_fields->m_highestPercent > 1.0f) {
-                auto bestPercent = progressBar->getChildByID("bpb-bestpercent");
+                auto bestPercent = progressBar->getChildByID("bestpercent"_spr);
                 if (bestPercent) {
                     bestPercent->setVisible(true);
                     bestPercent->setPositionX((progressBar->getContentSize().width * m_fields->m_highestPercent) / 100.0f);
@@ -80,7 +80,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
             }
 
             if (m_fields->m_sessionBestPercent > 1.0f) {
-                auto sessionBest = progressBar->getChildByID("bpb-sessionbest");
+                auto sessionBest = progressBar->getChildByID("sessionbest"_spr);
                 if (sessionBest) {
                     sessionBest->setVisible(true);
                     sessionBest->setPositionX((progressBar->getContentSize().width * m_fields->m_sessionBestPercent) / 100.0f);
@@ -88,8 +88,8 @@ class $modify(BPBPlayLayer, PlayLayer) {
             }
 
             if (m_fields->m_sessionBestPercent == m_fields->m_highestPercent) {
-                auto bestPercent = progressBar->getChildByID("bpb-bestpercent");
-                auto sessionBest = progressBar->getChildByID("bpb-sessionbest");
+                auto bestPercent = progressBar->getChildByID("bestpercent"_spr);
+                auto sessionBest = progressBar->getChildByID("sessionbest"_spr);
                 if (sessionBest && bestPercent) {
                     sessionBest->setVisible(false);
                     sessionBest->setPositionX((progressBar->getContentSize().width * m_fields->m_sessionBestPercent) / 100.0f);
@@ -97,7 +97,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
             }
 
             if (m_fields->m_highestPercent < 1.0f or m_fields->m_highestPercent >= 100.0f) {
-                auto bestPercent = progressBar->getChildByID("bpb-bestpercent");
+                auto bestPercent = progressBar->getChildByID("bestpercent"_spr);
 
                 if (bestPercent) {
                     bestPercent->setVisible(false);
