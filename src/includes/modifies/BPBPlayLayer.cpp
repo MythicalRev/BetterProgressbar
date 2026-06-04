@@ -55,21 +55,21 @@ class $modify(BPBPlayLayer, PlayLayer) {
             newSprite->setAnchorPoint({0, 0});
             newSprite->setPosition(progSprite->getPosition());
 
-            auto progSize = progSprite->getTextureRect();
-            float displayWidth = progSize.size.width * progSprite->getScaleX();
-            float displayHeight = progSize.size.height * progSprite->getScaleY();
+            float barWidth = this->m_progressBar->getContentSize().width;
+            float fillWidth = progSprite->getTextureRect().size.width * progSprite->getScaleX();
+            float fillRatio = fillWidth / barWidth;
 
             auto texSize = newSprite->getTexture()->getContentSize();
+            float displayHeight = progSprite->getTextureRect().size.height * progSprite->getScaleY();
 
-            newSprite->setScaleX(displayWidth / texSize.width);
+            newSprite->setScaleX(barWidth / texSize.width);
             newSprite->setScaleY(displayHeight / texSize.height);
 
-            newSprite->setTextureRect(CCRect(0, 0, texSize.width, texSize.height));
+            newSprite->setTextureRect(CCRect(0, 0, texSize.width * fillRatio, texSize.height));
 
             progSprite->setVisible(false);
+        }
     }
-}
-
     void startGame() {
         PlayLayer::startGame();
 
