@@ -1,6 +1,4 @@
-#pragma once
-
-#include <cocos2d.h>
+#include <Geode/Geode.hpp>
 
 using namespace geode::prelude;
 
@@ -9,6 +7,8 @@ class $modify(BPBPlayLayer, PlayLayer) {
     struct Fields {
         float m_highestPercent = 0.0f;
         float m_sessionBestPercent = 0.0f;
+
+        TaskHolder<web::WebResponse> m_listener;
     };
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
@@ -19,12 +19,52 @@ class $modify(BPBPlayLayer, PlayLayer) {
         return true;
     }
 
+    void fetchImage(const std::string& url) {
+        auto req = web::WebRequest();
+
+        m_fields->m_listener.spawn(
+            req.get(url), 
+            [this](web::WebResponse res) {
+                if (!res.ok()) return;
+
+                auto data = res.data();
+                
+                Loader::get()->queueInMainThread([this, data]() {
+                    auto img = new CCImage();
+                    if (img->initWithImageData(const_cast<unsigned char*>(data.data()), data.size())) {
+                        auto tex = new CCTexture2D();
+                        if (tex->initWithImage(img)) {
+                            if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
+                                prog->setTexture(tex);
+                            }
+                        }
+                        tex->release();
+                    }
+                    img->release();
+                });
+            }
+        );
+    }
+
+    void updateBar(float dt) {
+        if (this->m_progressBar) {
+            auto progSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByIndex(0));
+            auto newSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr));
+            newSprite->setColor({255, 255, 255});
+            newSprite->setAnchorPoint({0, 0});
+            newSprite->setPosition(progSprite->getPosition());
+            newSprite->setScale(progSprite->getScale());
+            newSprite->setTextureRect(progSprite->getTextureRect());
+
+            progSprite->setVisible(false);
+        }
+    }
+
     void startGame() {
         PlayLayer::startGame();
 
         if (this->m_progressBar) {
             this->scheduleOnce(schedule_selector(BPBPlayLayer::setupProgressIndecators), 0.0f);
-            changeProgressIdecators();
         }
     }
 
@@ -49,6 +89,28 @@ class $modify(BPBPlayLayer, PlayLayer) {
     void setupProgressIndecators(float) {
         auto progressBar = this->m_progressBar;
 
+        if (Mod::get()->getSavedValue<bool>("custom_bar", false) == true) {
+            auto url = Mod::get()->getSavedValue<std::string>("selected_bar", "");
+            if (!url.empty()) {
+                auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
+                auto newSprite = CCSprite::create();
+                newSprite->setColor({255, 255, 255});
+                newSprite->setAnchorPoint({0, 0});
+                newSprite->setPosition(progSprite->getPosition());
+                newSprite->setScale(progSprite->getScale());
+                newSprite->setZOrder(-1);
+                newSprite->setTextureRect(progSprite->getTextureRect());
+                newSprite->setID("prog"_spr);
+
+                this->m_progressBar->addChild(newSprite);
+
+                fetchImage(url);
+
+                this->schedule(schedule_selector(BPBPlayLayer::updateBar));
+            }
+        }
+
+
         auto sessionBest = CCSprite::create("sessionBest.png"_spr);
         sessionBest->setPositionX(0.0f);
         sessionBest->setPositionY(8.0f);
@@ -65,6 +127,8 @@ class $modify(BPBPlayLayer, PlayLayer) {
         bestPercent->setID("bestpercent"_spr);
 
         progressBar->addChild(bestPercent);
+
+        changeProgressIdecators();
     }
 
     void changeProgressIdecators() {
@@ -77,6 +141,11 @@ class $modify(BPBPlayLayer, PlayLayer) {
                     bestPercent->setVisible(true);
                     bestPercent->setPositionX((progressBar->getContentSize().width * m_fields->m_highestPercent) / 100.0f);
                 }
+            } else {
+                auto bestPercent = progressBar->getChildByID("bestpercent"_spr);
+                if (bestPercent) {
+                    bestPercent->setVisible(false);
+                }  
             }
 
             if (m_fields->m_sessionBestPercent > 1.0f) {
