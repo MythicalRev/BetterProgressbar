@@ -2,6 +2,7 @@
 #include <Geode/ui/BasedButtonSprite.hpp>
 
 #include "includes/custom/BarsPopup.hpp"
+#include "includes/custom/CustomBarPopup.hpp"
 #include "includes/modifies/BPBPlayLayer.cpp"
 
 using namespace geode::prelude;
@@ -26,6 +27,18 @@ class $modify(BPBMenuLayer, MenuLayer) {
     }
 
     void onMyButton(CCObject*) {
-        BarsPopup::create()->show();
+        geode::createQuickPopup(
+            "Custom Bars",
+            "Custom or Database?",
+            "Custom", "Database",
+            [](auto, bool btn2) {
+                if (btn2) {
+                    BarsPopup::create()->show();
+                } else {
+                    CustomBarPopup::create()->show();
+                }
+            }
+        );
+        
     }
 };
