@@ -2,6 +2,7 @@
 
 #include <Geode/Geode.hpp>
 #include <Geode/utils/web.hpp>
+#include <Geode/utils/base64.hpp>
 #include "BarItemCell.hpp"
 
 using namespace geode::prelude;
@@ -9,6 +10,8 @@ using namespace geode::prelude;
 class BarsPopup : public Popup {
 protected:
     ScrollLayer* scrollLayer = nullptr;
+
+    TaskHolder<web::WebResponse> m_listener;
 
     bool init() {
         if (!Popup::init(350, 260))
@@ -122,6 +125,7 @@ protected:
         defaultCell->onUse = [this]() {
             Mod::get()->setSavedValue<std::string>("selected_bar", "");
             Mod::get()->setSavedValue<bool>("custom_bar", false);
+            Mod::get()->setSettingValue<std::filesystem::path>("customBar", "Please pick an image file.");
             this->onClose(nullptr);
         };
         
@@ -142,7 +146,7 @@ protected:
         scrollLayer->moveToTop();
     }
 
-    void showError(const std::string& msg) {
+    void showError(std::string msg) {
         if (auto lbl = m_mainLayer->getChildByID("loading-label"))
             lbl->removeFromParent();
         auto errLabel = CCLabelBMFont::create(msg.c_str(), "bigFont.fnt");
@@ -151,10 +155,46 @@ protected:
         m_mainLayer->addChildAtPosition(errLabel, Anchor::Center, ccp(0, -10));
     }
 
+    void fetchImage(std::string barUrl) {
+        log::debug("Fetching image.");
+
+        m_listener.spawn(
+            web::WebRequest().get(barUrl),
+            [this](web::WebResponse res) {
+                if (!res.ok()) {
+                    log::error("Failed to fetch image.");
+                    return;
+                }
+
+                log::debug("Fetching image.");
+
+                auto bytes = res.data();
+                auto img = new CCImage();
+                
+                if (img->initWithImageData(
+                    const_cast<unsigned char*>(bytes.data()),
+                    static_cast<int>(bytes.size())
+                )) {
+                    log::info("Image downloaded and parsed successfully.");
+
+                    std::string base64Str = geode::utils::base64::encode(bytes);
+
+                    Mod::get()->setSavedValue<std::string>("selected_bar", base64Str);
+                    Mod::get()->setSavedValue<bool>("custom_bar", true);
+                    Mod::get()->setSettingValue<std::filesystem::path>("customBar", "Please pick an image file.");
+                    this->onClose(nullptr);
+                } else {
+                    log::error("Failed to parse downloaded image data.");
+                }
+
+                img->release();
+            }
+        );
+    }
+
+
     void onBarSelected(const std::string& name, const std::string& url) {
-        Mod::get()->setSavedValue<std::string>("selected_bar", url);
-        Mod::get()->setSavedValue<bool>("custom_bar", true);
-        this->onClose(nullptr);
+        fetchImage(url);
     }
 
 public:

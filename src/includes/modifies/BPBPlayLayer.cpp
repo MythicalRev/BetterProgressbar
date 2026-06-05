@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <Geode/utils/base64.hpp>
 
 using namespace geode::prelude;
 
@@ -7,8 +8,6 @@ class $modify(BPBPlayLayer, PlayLayer) {
     struct Fields {
         float m_highestPercent = 0.0f;
         float m_sessionBestPercent = 0.0f;
-
-        TaskHolder<web::WebResponse> m_listener;
     };
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
@@ -19,31 +18,29 @@ class $modify(BPBPlayLayer, PlayLayer) {
         return true;
     }
 
-    void fetchImage(const std::string& url) {
-        auto req = web::WebRequest();
-
-        m_fields->m_listener.spawn(
-            req.get(url), 
-            [this](web::WebResponse res) {
-                if (!res.ok()) return;
-
-                auto data = res.data();
+    void fetchImage(std::string dataString) {
+        geode::ByteVector data = geode::utils::base64::decode(dataString).unwrapOr(geode::ByteVector{});
+        
+        if (data.empty()) {
+            log::error("Base64 decoding failed or string data was corrupted.");
+            return;
+        }
                 
-                Loader::get()->queueInMainThread([this, data]() {
-                    auto img = new CCImage();
-                    if (img->initWithImageData(const_cast<unsigned char*>(data.data()), data.size())) {
-                        auto tex = new CCTexture2D();
-                        if (tex->initWithImage(img)) {
-                            if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
-                                prog->setTexture(tex);
-                            }
-                        }
-                        tex->release();
+        Loader::get()->queueInMainThread([this, data]() {
+            auto img = new CCImage();
+            if (img->initWithImageData(const_cast<unsigned char*>(data.data()), data.size())) {
+                auto tex = new CCTexture2D();
+                if (tex->initWithImage(img)) {
+                    if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
+                        prog->setTexture(tex);
+                        
+                        prog->setTextureRect({0, 0, tex->getContentSize().width, tex->getContentSize().height});
                     }
-                    img->release();
-                });
+                }
+                tex->release();
             }
-        );
+            img->release();
+        });
     }
 
     void updateBar(float dt) {
@@ -71,6 +68,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
             newSprite->setZOrder(-1);
         }
     }
+    
     void startGame() {
         PlayLayer::startGame();
 
@@ -101,24 +99,48 @@ class $modify(BPBPlayLayer, PlayLayer) {
         auto progressBar = this->m_progressBar;
 
         if (Mod::get()->getSavedValue<bool>("custom_bar", false) == true) {
-            auto url = Mod::get()->getSavedValue<std::string>("selected_bar", "");
-            if (!url.empty()) {
-                auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
-                auto newSprite = CCSprite::create();
-                newSprite->setColor({255, 255, 255});
-                newSprite->setAnchorPoint({0, 0});
-                newSprite->setPosition(progSprite->getPosition());
-                newSprite->setScale(progSprite->getScale());
-                newSprite->setZOrder(-1);
-                newSprite->setTextureRect(progSprite->getTextureRect());
-                newSprite->setID("prog"_spr);
+            if (Mod::get()->getSettingValue<std::filesystem::path>("customBar") != "Please pick an image file.") {
+                auto data = loadImageToByteVector(Mod::get()->getSettingValue<std::filesystem::path>("customBar"));
+                std::string dataString = geode::utils::base64::encode(data);
 
-                this->m_progressBar->addChild(newSprite);
+                if (!dataString.empty()) {
+                    auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
+                    auto newSprite = CCSprite::create();
+                    newSprite->setColor({255, 255, 255});
+                    newSprite->setAnchorPoint({0, 0});
+                    newSprite->setPosition(progSprite->getPosition());
+                    newSprite->setScale(progSprite->getScale());
+                    newSprite->setZOrder(-1);
+                    newSprite->setTextureRect(progSprite->getTextureRect());
+                    newSprite->setID("prog"_spr);
 
-                fetchImage(url);
+                    this->m_progressBar->addChild(newSprite);
 
-                this->schedule(schedule_selector(BPBPlayLayer::updateBar));
+                    fetchImage(dataString);
+
+                    this->schedule(schedule_selector(BPBPlayLayer::updateBar));
+                }
+            } else {
+                auto dataString = Mod::get()->getSavedValue<std::string>("selected_bar", "");
+                if (!dataString.empty()) {
+                    auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
+                    auto newSprite = CCSprite::create();
+                    newSprite->setColor({255, 255, 255});
+                    newSprite->setAnchorPoint({0, 0});
+                    newSprite->setPosition(progSprite->getPosition());
+                    newSprite->setScale(progSprite->getScale());
+                    newSprite->setZOrder(-1);
+                    newSprite->setTextureRect(progSprite->getTextureRect());
+                    newSprite->setID("prog"_spr);
+
+                    this->m_progressBar->addChild(newSprite);
+
+                    fetchImage(dataString);
+
+                    this->schedule(schedule_selector(BPBPlayLayer::updateBar));
+                }
             }
+
         }
 
 
@@ -184,5 +206,25 @@ class $modify(BPBPlayLayer, PlayLayer) {
                 }
             }
         }
+    }
+
+    geode::ByteVector loadImageToByteVector(const std::filesystem::path& imagePath) {
+        std::ifstream file(imagePath, std::ios::binary | std::ios::ate);
+
+        if (!file.is_open()) {
+            geode::log::error("Failed to open image file: {}", imagePath.string());
+            return {};
+        }
+
+        std::streamsize size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        geode::ByteVector buffer(size);
+        if (file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+            return buffer;
+        }
+
+        geode::log::error("Failed to read image data from: {}", imagePath.string());
+        return {};
     }
 };

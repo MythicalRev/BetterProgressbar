@@ -21,5 +21,21 @@
     },
 	"tags": [
 		"enhancement"
-	]
+	],
+	"settings": {
+		"customBar": {
+			"type": "file",
+			"name": "Custom Bar Image",
+			"default": "Please pick an image file.",
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": ["*.png", "*.jpg", "*.jpeg"],
+						"description": "Image files"
+					}
+				]
+			}
+		}
+	}
 }
