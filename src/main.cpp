@@ -21,7 +21,7 @@ class $modify(BPBMenuLayer, MenuLayer) {
         if (!MenuLayer::init()) return false;
 
         auto openBars = CCMenuItemSpriteExtra::create(
-            CircleButtonSprite::createWithSpriteFrameName("best.png"_spr),
+            CircleButtonSprite::createWithSprite("buttonicon.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::MediumAlt),
             this,
             menu_selector(BPBMenuLayer::onButton)
         );
@@ -32,6 +32,28 @@ class $modify(BPBMenuLayer, MenuLayer) {
         menu->updateLayout();
 
         return true;
+    }
+
+    void onButton(CCObject*) {
+        CustomBarPopup::create()->show();
+    }
+};
+
+#include <Geode/modify/PauseLayer.hpp>
+class $modify(BPBPauseLayer, PauseLayer) {
+    void customSetup() {
+        PauseLayer::customSetup();
+
+        auto openBars = CCMenuItemSpriteExtra::create(
+            CircleButtonSprite::createWithSprite("buttonicon.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::MediumAlt),
+            this,
+            menu_selector(BPBPauseLayer::onButton)
+        );
+
+        auto menu = this->getChildByID("right-button-menu");
+        menu->addChild(openBars);
+        openBars->setID("openBars"_spr);
+        menu->updateLayout();
     }
 
     void onButton(CCObject*) {

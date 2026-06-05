@@ -104,19 +104,23 @@ public:
 
                 auto bytes = res.data();
                 auto img = new CCImage();
-                
-                if (!img->initWithImageData(
-                    const_cast<unsigned char*>(bytes.data()),
-                    static_cast<int>(bytes.size())
-                )) {
+                if (!img->initWithImageData(const_cast<unsigned char*>(bytes.data()), static_cast<int>(bytes.size()))) {
                     img->release();
                     return;
                 }
 
                 auto tex = new CCTexture2D();
-                if (tex->initWithImage(img)) {
+                bool success = tex->initWithImage(img);
+                img->release();
+
+                if (success) {
                     auto spr = CCSprite::createWithTexture(tex);
-                    spr->setScale(1.164f);
+                    
+                    float targetWidth = 206.f;
+                    float targetHeight = 14.f;
+                    spr->setScaleX(targetWidth / spr->getContentSize().width);
+                    spr->setScaleY(targetHeight / spr->getContentSize().height);
+                    
                     spr->setAnchorPoint(ccp(0, 0.5f));
                     spr->setPosition(ccp(8, self->getContentHeight() * 0.5f));
                     spr->setID("bar-preview");
@@ -127,7 +131,6 @@ public:
                     self->addChild(spr);
                 }
                 tex->release();
-                img->release();
             }
         );
     }
