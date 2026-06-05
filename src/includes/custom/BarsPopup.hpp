@@ -121,6 +121,7 @@ protected:
         defaultCell->setContentSize(ccp(313, 30));
         defaultCell->ignoreAnchorPointForPosition(false);
         defaultCell->setAnchorPoint(ccp(0, 1));
+        defaultCell->setZOrder(1000);
 
         defaultCell->onUse = [this]() {
             Mod::get()->setSavedValue<std::string>("selected_bar", "");
@@ -137,6 +138,7 @@ protected:
             cell->setContentSize(ccp(313, 30));
             cell->ignoreAnchorPointForPosition(false);
             cell->setAnchorPoint(ccp(0, 1));
+            cell->setZOrder(index+1000);
             cell->onUse = [this, name, url]() { onBarSelected(name, url); };
             scrollLayer->m_contentLayer->addChild(cell);
             ++index;
@@ -194,7 +196,9 @@ protected:
 
 
     void onBarSelected(const std::string& name, const std::string& url) {
-        fetchImage(url);
+        Loader::get()->queueInMainThread([this, url]() {
+            fetchImage(url);
+        });
     }
 
 public:
