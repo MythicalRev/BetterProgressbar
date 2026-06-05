@@ -44,8 +44,12 @@ class $modify(BPBPauseLayer, PauseLayer) {
     void customSetup() {
         PauseLayer::customSetup();
 
+        auto spr = CircleButtonSprite::createWithSprite("buttonicon.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::Tiny);
+
+        spr->setScale(1.2f);
+
         auto openBars = CCMenuItemSpriteExtra::create(
-            CircleButtonSprite::createWithSprite("buttonicon.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::MediumAlt),
+            spr,
             this,
             menu_selector(BPBPauseLayer::onButton)
         );

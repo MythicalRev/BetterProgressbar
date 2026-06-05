@@ -20,8 +20,18 @@
         ]
     },
 	"tags": [
-		"enhancement"
+		"enhancement",
+		"customization",
+		"interface"
 	],
+	"links": {
+		"source": "https://github.com/MythicalRev/BetterProgressbar",
+		"homepage": "https://myth.gay"
+	},
+	"issues": {
+		"info": "Report an issue",
+		"url": "https://github.com/MythicalRev/BetterProgressbar/issues"
+	},
 	"settings": {
 		"customBar": {
 			"type": "file",
