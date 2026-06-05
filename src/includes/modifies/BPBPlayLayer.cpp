@@ -66,8 +66,9 @@ class $modify(BPBPlayLayer, PlayLayer) {
             newSprite->setScaleY(displayHeight / texSize.height);
 
             newSprite->setTextureRect(CCRect(0, 0, texSize.width * fillRatio, texSize.height));
-
-            progSprite->setVisible(false);
+            
+            progSprite->setZOrder(-2);
+            newSprite->setZOrder(-1);
         }
     }
     void startGame() {
