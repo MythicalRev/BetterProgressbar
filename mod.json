@@ -8,7 +8,7 @@
 	},
 	"id": "mythicalrev.better-progressbar",
 	"name": "Better Progress Bar",
-	"version": "v1.0.0",
+	"version": "v1.0.1",
 	"developer": "MythicalRev",
 	"description": "Adds Custom Progress Bar Images and More!",
 	"dependencies": {
