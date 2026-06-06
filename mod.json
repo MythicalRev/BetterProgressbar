@@ -10,7 +10,7 @@
 	"name": "Better Progress Bar",
 	"version": "v1.0.0",
 	"developer": "MythicalRev",
-	"description": "Adds Improvements to the Progress Bar",
+	"description": "Adds Custom Progress Bar Images and More!",
 	"dependencies": {
 		"geode.node-ids": ">=v1.20.0"
 	},
