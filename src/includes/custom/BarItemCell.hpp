@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Geode/cocos/layers_scenes_transitions_nodes/CCLayer.h"
+#include "Geode/cocos/touch_dispatcher/CCTouchDelegateProtocol.h"
+#include "Geode/cocos/touch_dispatcher/CCTouchDispatcher.h"
 #include <Geode/Geode.hpp>
 #include <Geode/utils/web.hpp>
 
@@ -19,11 +22,11 @@ public:
     bool init(const std::string& barName, const std::string& barUrl, int index) {
         if (!CCLayerColor::init()) return false;
 
-        if (barName == "Default Bar") {
-            m_barName = barName;
-            m_barUrl  = barUrl;
-            m_index   = index;
+        m_barName = barName;
+        m_barUrl  = barUrl;
+        m_index   = index;
 
+        if (barName == "Default Bar") {
             this->setOpacity((index % 2 == 0) ? 100 : 50);
             this->setContentSize(ccp(313, 30));
             this->setAnchorPoint(ccp(0, 1));
@@ -52,11 +55,9 @@ public:
             RowLayout::create()->apply(menu);
             menu->updateLayout();
             this->addChild(menu);
-        } else {
-            m_barName = barName;
-            m_barUrl  = barUrl;
-            m_index   = index;
 
+            CCTouchDispatcher::get()->addTargetedDelegate(menu, CCTouchDispatcher::get()->getTargetPrio() - 5, true);
+        } else {
             this->setOpacity((index % 2 == 0) ? 100 : 50);
             this->setContentSize(ccp(313, 30));
             this->setAnchorPoint(ccp(0, 1));
@@ -86,6 +87,8 @@ public:
             RowLayout::create()->apply(menu);
             menu->updateLayout();
             this->addChild(menu);
+            
+            CCTouchDispatcher::get()->addTargetedDelegate(menu, CCTouchDispatcher::get()->getTargetPrio() - 5, true);
 
             fetchImage();
         }
