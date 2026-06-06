@@ -157,18 +157,26 @@ protected:
 
     void fetchImage(std::string barUrl) {
         log::debug("Fetching image.");
+        Ref<BarsPopup> self(this);
 
         m_listener.spawn(
             web::WebRequest().get(barUrl),
-            [this](web::WebResponse res) {
+            [this, self](web::WebResponse res) {
+                log::info("Callback called, code: {}", res.code());
+
+                if (res.error()) {
+                    log::error("Network error: {}", res.errorMessage());
+                    showError("Network error.");
+                    this->onClose(nullptr);
+                    return;
+                }
+
                 if (!res.ok()) {
                     log::error("Failed to fetch image.");
                     showError("Failed to fetch image.");
                     this->onClose(nullptr);
                     return;
                 }
-
-                log::debug("Fetching image.");
 
                 auto bytes = res.data();
                 auto img = new CCImage();
