@@ -128,7 +128,7 @@ protected:
             Mod::get()->setSavedValue<bool>("custom_bar", false);
             Mod::get()->setSettingValue<std::filesystem::path>("customBar", "Please pick an image file.");
             
-            geode::Notification::create("Custom Progress Bar Applied!", geode::NotificationIcon::Success, 1.0f)->show();
+            geode::Notification::create("Custom Progress Bar Reset!", geode::NotificationIcon::Success, 5.0f)->show();
 
             this->onClose(nullptr);
         };
@@ -152,7 +152,7 @@ protected:
     }
 
     void showError(std::string msg) {
-        geode::Notification::create(msg, geode::NotificationIcon::Error, 1.0f)->show();
+        geode::Notification::create(msg, geode::NotificationIcon::Error, 5.0f)->show();
     }
 
     void fetchImage(std::string barUrl) {
@@ -182,9 +182,11 @@ protected:
                     Mod::get()->setSavedValue<std::string>("selected_bar", base64Str);
                     Mod::get()->setSavedValue<bool>("custom_bar", true);
                     Mod::get()->setSettingValue<std::filesystem::path>("customBar", "Please pick an image file.");
+                    geode::Notification::create("Custom Progress Bar Set!", geode::NotificationIcon::Success, 5.0f)->show();
                     this->onClose(nullptr);
                 } else {
                     log::error("Failed to parse downloaded image data.");
+                    showError("Failed to parse image data.");
                 }
 
                 img->release();
