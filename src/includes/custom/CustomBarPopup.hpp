@@ -44,6 +44,7 @@ protected:
 
         menu->addChildAtPosition(databaseBtn, Anchor::Center);
         menu->addChildAtPosition(customBtn, Anchor::Center);
+        
 
         menu->setLayout(layout);
         menu->updateLayout();
