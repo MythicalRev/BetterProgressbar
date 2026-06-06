@@ -4,7 +4,7 @@
 #include <Geode/utils/web.hpp>
 #include <Geode/utils/base64.hpp>
 #include "BarItemCell.hpp"
-
+#include <Geode/ui/Notification.hpp>
 using namespace geode::prelude;
 
 class BarsPopup : public Popup {
@@ -127,6 +127,9 @@ protected:
             Mod::get()->setSavedValue<std::string>("selected_bar", "");
             Mod::get()->setSavedValue<bool>("custom_bar", false);
             Mod::get()->setSettingValue<std::filesystem::path>("customBar", "Please pick an image file.");
+            
+            geode::Notification::create("Custom Progress Bar Applied!", geode::NotificationIcon::Success, 1.0f)->show();
+
             this->onClose(nullptr);
         };
         
@@ -149,12 +152,7 @@ protected:
     }
 
     void showError(std::string msg) {
-        if (auto lbl = m_mainLayer->getChildByID("loading-label"))
-            lbl->removeFromParent();
-        auto errLabel = CCLabelBMFont::create(msg.c_str(), "bigFont.fnt");
-        errLabel->setScale(0.45f);
-        errLabel->setColor({255, 80, 80});
-        m_mainLayer->addChildAtPosition(errLabel, Anchor::Center, ccp(0, -10));
+        geode::Notification::create(msg, geode::NotificationIcon::Error, 1.0f)->show();
     }
 
     void fetchImage(std::string barUrl) {
