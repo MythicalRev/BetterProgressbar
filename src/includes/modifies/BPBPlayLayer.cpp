@@ -8,6 +8,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
     struct Fields {
         float m_highestPercent = 0.0f;
         float m_sessionBestPercent = 0.0f;
+        std::string m_oldDataString = "";
     };
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
@@ -25,42 +26,74 @@ class $modify(BPBPlayLayer, PlayLayer) {
             log::error("Base64 decoding failed or string data was corrupted.");
             return;
         }
-                
-        Loader::get()->queueInMainThread([this, data]() {
-            auto img = new CCImage();
-            if (img->initWithImageData(const_cast<unsigned char*>(data.data()), data.size())) {
-                auto tex = new CCTexture2D();
-                if (tex->initWithImage(img)) {
-                    if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
-                        auto progSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByIndex(0));
 
-                        prog->setTexture(tex);
-                        prog->setTextureRect({0, 0, tex->getContentSize().width, tex->getContentSize().height / 1.25f});
+        if (dataString == m_fields->m_oldDataString) {
+            log::debug("1");
+            Loader::get()->queueInMainThread([this, data, dataString]() {
+                if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
+                    auto progSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByIndex(0));
 
-                        prog->setColor({255, 255, 255});
-                        prog->setAnchorPoint({0, .5f});
-                        prog->setPosition(ccp(progSprite->getPositionX(), this->m_progressBar->getContentSize().height / 2));
+                    prog->setColor({255, 255, 255});
+                    prog->setAnchorPoint({0, .5f});
+                    prog->setPosition(ccp(progSprite->getPositionX(), this->m_progressBar->getContentSize().height / 2));
 
-                        float barWidth = this->m_progressBar->getContentSize().width;
-                        float fillWidth = progSprite->getTextureRect().size.width * progSprite->getScaleX();
-                        float fillRatio = fillWidth / barWidth;
+                    float barWidth = this->m_progressBar->getContentSize().width;
+                    float fillWidth = progSprite->getTextureRect().size.width * progSprite->getScaleX();
+                    float fillRatio = fillWidth / barWidth;
 
-                        auto texSize = prog->getTexture()->getContentSize();
-                        float displayHeight = progSprite->getTextureRect().size.height * progSprite->getScaleY();
+                    auto texSize = prog->getTexture()->getContentSize();
+                    float displayHeight = progSprite->getTextureRect().size.height * progSprite->getScaleY();
 
-                        prog->setScaleX(barWidth / texSize.width);
-                        prog->setScaleY((displayHeight / texSize.height) * 0.65f);
+                    prog->setScaleX(barWidth / texSize.width);
+                    prog->setScaleY((displayHeight / texSize.height) * 0.65f);
 
-                        prog->setTextureRect(CCRect(0, 0, texSize.width * fillRatio, texSize.height));
-                        
-                        progSprite->setZOrder(-2);
-                        prog->setZOrder(-1);
-                    }
+                    prog->setTextureRect(CCRect(0, 0, texSize.width * fillRatio, texSize.height));
+                            
+                    progSprite->setZOrder(-2);
+                    prog->setZOrder(-1);
                 }
-                tex->release();
-            }
-            img->release();
-        });
+            });
+        } else {
+            log::debug("2");
+            Loader::get()->queueInMainThread([this, data, dataString]() {
+                m_fields->m_oldDataString = dataString;
+                
+                auto img = new CCImage();
+                if (img->initWithImageData(const_cast<unsigned char*>(data.data()), data.size())) {
+                    auto tex = new CCTexture2D();
+                    if (tex->initWithImage(img)) {
+                        if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
+                            auto progSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByIndex(0));
+                            
+                            prog->setTexture(tex);
+
+                            prog->setTextureRect({0, 0, tex->getContentSize().width, tex->getContentSize().height / 1.25f});
+
+                            prog->setColor({255, 255, 255});
+                            prog->setAnchorPoint({0, .5f});
+                            prog->setPosition(ccp(progSprite->getPositionX(), this->m_progressBar->getContentSize().height / 2));
+
+                            float barWidth = this->m_progressBar->getContentSize().width;
+                            float fillWidth = progSprite->getTextureRect().size.width * progSprite->getScaleX();
+                            float fillRatio = fillWidth / barWidth;
+
+                            auto texSize = prog->getTexture()->getContentSize();
+                            float displayHeight = progSprite->getTextureRect().size.height * progSprite->getScaleY();
+
+                            prog->setScaleX(barWidth / texSize.width);
+                            prog->setScaleY((displayHeight / texSize.height) * 0.65f);
+
+                            prog->setTextureRect(CCRect(0, 0, texSize.width * fillRatio, texSize.height));
+                            
+                            progSprite->setZOrder(-2);
+                            prog->setZOrder(-1);
+                        }
+                    }
+                    tex->release();
+                }
+                img->release();
+            });
+        }
     }
 
     void updateBar(float dt) {

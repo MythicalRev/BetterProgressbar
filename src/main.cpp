@@ -7,10 +7,50 @@
 
 using namespace geode::prelude;
 
+geode::ByteVector loadImageToByteVector(const std::filesystem::path& imagePath) {
+    std::ifstream file(imagePath, std::ios::binary | std::ios::ate);
+
+    if (!file.is_open()) {
+        geode::log::error("Failed to open image file: {}", imagePath.string());
+        return {};
+    }
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    geode::ByteVector buffer(size);
+    if (file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+        return buffer;
+    }
+
+    geode::log::error("Failed to read image data from: {}", imagePath.string());
+    return {};
+}
+
 $on_mod(Loaded) {
     listenForSettingChanges<std::filesystem::path>("customBar", [](std::filesystem::path value) {
         if (Mod::get()->getSettingValue<std::filesystem::path>("customBar") != "Please pick an image file.") {
-            Mod::get()->setSavedValue<bool>("custom_bar", true);
+            auto data = loadImageToByteVector(Mod::get()->getSettingValue<std::filesystem::path>("customBar"));
+
+            Loader::get()->queueInMainThread([data]() {
+                auto img = new CCImage();
+                if (img->initWithImageData(const_cast<unsigned char*>(data.data()), data.size())) {
+                    auto tex = new CCTexture2D();
+                    if (tex->initWithImage(img)) {
+
+                        if (tex->getPixelsHigh() <= 1000 && tex->getPixelsWide() <= 1000) {
+                            Mod::get()->setSavedValue<bool>("custom_bar", true);
+                        } else {
+                            geode::Notification::create("Image Too Large! (Max 1000x1000)", geode::NotificationIcon::Error, 5.0f)->show();
+                            Mod::get()->setSettingValue<std::filesystem::path>("customBar", "Please pick an image file.");
+                        }
+
+                        tex->release();
+                        img->release();
+                    }
+                }
+                img->release();
+            });
         }
     });
 }

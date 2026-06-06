@@ -15,7 +15,7 @@ Adds custom images to your progress bar along with two indicators in-game.
 
 #### Custom Progress Bars
 
-- Locally upload your own image file
+- Locally upload your own image file (RECCOMENDED 823x32 MAX 1000x1000)
 - Pick from the database
 
 ## Support
