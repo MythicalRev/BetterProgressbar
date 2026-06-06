@@ -1,6 +1,6 @@
 # Better Progress Bar
 
-Adds two indicators to the progress bar in-game.
+Adds custom images to your progress bar along with two indicators in-game.
 
 ## Credits
 

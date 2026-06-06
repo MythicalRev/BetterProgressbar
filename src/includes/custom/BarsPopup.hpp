@@ -163,6 +163,8 @@ protected:
             [this](web::WebResponse res) {
                 if (!res.ok()) {
                     log::error("Failed to fetch image.");
+                    showError("Failed to fetch image.");
+                    this->onClose(nullptr);
                     return;
                 }
 

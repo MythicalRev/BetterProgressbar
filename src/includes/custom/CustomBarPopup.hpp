@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
+#include <Geode/ui/GeodeUI.hpp>
 #include "BarsPopup.hpp"
 
 using namespace geode::prelude;
@@ -57,11 +58,7 @@ protected:
     }
 
     void onCustom(CCObject* sender) {
-        FLAlertLayer::create(
-            "Custom Bar",
-            "Upload Image in Mod Settings.",
-            "OK"
-        )->show();
+        geode::openSettingsPopup(Mod::get(), true);
 
         this->onClose(nullptr);
     }
