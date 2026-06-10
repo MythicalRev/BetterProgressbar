@@ -28,10 +28,10 @@ class $modify(BPBPlayLayer, PlayLayer) {
         }
 
         if (dataString == m_fields->m_oldDataString) {
-            log::debug("1");
             Loader::get()->queueInMainThread([this, data, dataString]() {
                 if (auto prog = static_cast<CCSprite*>(this->m_progressBar->getChildByID("prog"_spr))) {
                     auto progSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByIndex(0));
+                    progSprite->setVisible(false);
 
                     prog->setColor({255, 255, 255});
                     prog->setAnchorPoint({0, .5f});
@@ -51,10 +51,10 @@ class $modify(BPBPlayLayer, PlayLayer) {
                             
                     progSprite->setZOrder(-2);
                     prog->setZOrder(-1);
+                    prog->setVisible(true);
                 }
             });
         } else {
-            log::debug("2");
             Loader::get()->queueInMainThread([this, data, dataString]() {
                 m_fields->m_oldDataString = dataString;
                 
@@ -86,7 +86,9 @@ class $modify(BPBPlayLayer, PlayLayer) {
                             prog->setTextureRect(CCRect(0, 0, texSize.width * fillRatio, texSize.height));
                             
                             progSprite->setZOrder(-2);
+                            progSprite->setVisible(false);
                             prog->setZOrder(-1);
+                            prog->setVisible(true);
                         }
                     }
                     tex->release();
@@ -110,8 +112,15 @@ class $modify(BPBPlayLayer, PlayLayer) {
                     auto dataString = Mod::get()->getSavedValue<std::string>("selected_bar", "");
                     if (!dataString.empty()) {
                         fetchImage(dataString);
+                        log::debug("getting bar");
                     }
                 }
+            } else {
+                auto prog = this->m_progressBar->getChildByID("prog"_spr);
+                auto progSprite = static_cast<CCSprite*>(this->m_progressBar->getChildByIndex(0));
+
+                prog->setVisible(false);
+                progSprite->setVisible(true);
             }
         }
     }
@@ -145,48 +154,19 @@ class $modify(BPBPlayLayer, PlayLayer) {
     void setupProgressIndecators(float) {
         auto progressBar = this->m_progressBar;
 
-        if (Mod::get()->getSavedValue<bool>("custom_bar", false) == true) {
-            if (Mod::get()->getSettingValue<std::filesystem::path>("customBar") != "Please pick an image file.") {
-                auto data = loadImageToByteVector(Mod::get()->getSettingValue<std::filesystem::path>("customBar"));
-                std::string dataString = geode::utils::base64::encode(data);
+        auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
+        auto newSprite = CCSprite::create();
+        newSprite->setColor({255, 255, 255});
+        newSprite->setAnchorPoint({0, .5f});
+        newSprite->setPosition(ccp(progSprite->getPositionX(), this->m_progressBar->getContentSize().height / 2));
+        newSprite->setScale(progSprite->getScale());
+        newSprite->setZOrder(-1);
+        newSprite->setTextureRect(progSprite->getTextureRect());
+        newSprite->setID("prog"_spr);
 
-                if (!dataString.empty()) {
-                    auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
-                    auto newSprite = CCSprite::create();
-                    newSprite->setColor({255, 255, 255});
-                    newSprite->setAnchorPoint({0, .5f});
-                    newSprite->setPosition(ccp(progSprite->getPositionX(), this->m_progressBar->getContentSize().height / 2));
-                    newSprite->setScale(progSprite->getScale());
-                    newSprite->setZOrder(-1);
-                    newSprite->setTextureRect(progSprite->getTextureRect());
-                    newSprite->setID("prog"_spr);
+        this->m_progressBar->addChild(newSprite);
 
-                    this->m_progressBar->addChild(newSprite);
-
-                    this->schedule(schedule_selector(BPBPlayLayer::updateBar));
-                }
-            } else {
-                auto dataString = Mod::get()->getSavedValue<std::string>("selected_bar", "");
-                if (!dataString.empty()) {
-                    auto progSprite = static_cast<CCSprite*>(progressBar->getChildByIndex(0));
-                    auto newSprite = CCSprite::create();
-                    newSprite->setColor({255, 255, 255});
-                    newSprite->setAnchorPoint({0, .5f});
-                    newSprite->setPosition(ccp(progSprite->getPositionX(), this->m_progressBar->getContentSize().height / 2));
-                    newSprite->setScale(progSprite->getScale());
-                    newSprite->setZOrder(-1);
-                    newSprite->setTextureRect(progSprite->getTextureRect());
-                    newSprite->setID("prog"_spr);
-
-                    this->m_progressBar->addChild(newSprite);
-
-                    fetchImage(dataString);
-
-                    this->schedule(schedule_selector(BPBPlayLayer::updateBar));
-                }
-            }
-
-        }
+        this->schedule(schedule_selector(BPBPlayLayer::updateBar));
 
         auto sessionBest = CCSprite::create("sessionBest.png"_spr);
         sessionBest->setPositionX(0.0f);
@@ -211,7 +191,7 @@ class $modify(BPBPlayLayer, PlayLayer) {
     void changeProgressIdecators() {
         auto progressBar = this->m_progressBar;
 
-        if (progressBar) {
+        if (progressBar && !this->m_isPracticeMode) {
             if (m_fields->m_highestPercent > 1.0f) {
                 auto bestPercent = progressBar->getChildByID("bestpercent"_spr);
                 if (bestPercent) {
