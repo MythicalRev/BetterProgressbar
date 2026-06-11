@@ -112,7 +112,6 @@ class $modify(BPBPlayLayer, PlayLayer) {
                     auto dataString = Mod::get()->getSavedValue<std::string>("selected_bar", "");
                     if (!dataString.empty()) {
                         fetchImage(dataString);
-                        log::debug("getting bar");
                     }
                 }
             } else {
@@ -121,6 +120,18 @@ class $modify(BPBPlayLayer, PlayLayer) {
 
                 prog->setVisible(false);
                 progSprite->setVisible(true);
+            }
+
+            if (Mod::get()->getSettingValue<bool>("sessionOn") && m_fields->m_sessionBestPercent > 1.0f && m_fields->m_sessionBestPercent != m_fields->m_highestPercent) {
+                this->m_progressBar->getChildByID("sessionbest"_spr)->setVisible(true);
+            } else {
+                this->m_progressBar->getChildByID("sessionbest"_spr)->setVisible(false);
+            }
+
+            if (Mod::get()->getSettingValue<bool>("bestOn") && m_fields->m_highestPercent > 1.0f && m_fields->m_highestPercent < 100.0f) {
+                this->m_progressBar->getChildByID("bestpercent"_spr)->setVisible(true);
+            } else {
+                this->m_progressBar->getChildByID("bestpercent"_spr)->setVisible(false);
             }
         }
     }

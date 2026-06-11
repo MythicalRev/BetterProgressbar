@@ -8,7 +8,7 @@
 	},
 	"id": "mythicalrev.better-progressbar",
 	"name": "Better Progress Bar",
-	"version": "v1.0.4",
+	"version": "v1.0.5",
 	"developer": "MythicalRev",
 	"description": "Adds Custom Progress Bar Images and More!",
 	"dependencies": {
@@ -46,6 +46,20 @@
 					}
 				]
 			}
+		},
+		"indicators": {
+			"type": "title",
+			"name": "Indicators"
+		},
+		"sessionOn": {
+			"type": "bool",
+			"name": "Session Best On",
+			"default": true
+		},
+		"bestOn": {
+			"type": "bool",
+			"name": "Best Percent On",
+			"default": true
 		}
 	}
 }

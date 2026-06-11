@@ -1,3 +1,6 @@
+# 1.0.5
+- Remove console spam (im dumb)
+- Add toggles for indicators
 # 1.0.4
 - BUG FIXES:
     - Hid default progress bar unless in use
